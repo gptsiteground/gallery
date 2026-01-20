@@ -3,26 +3,27 @@
     {
       "slug": "boo",
       "title": "boo",
-      "cover": "photos/boo/0012c14c-5ba3-48a1-b6ae-21a124be0cec.png",
+      "cover": "photos/boo/cover.png",
       "count": 29
     },
     {
       "slug": "down",
       "title": "down",
-      "cover": "photos/down/download%20%281%29.jpeg",
+      "cover": "photos/down/cover.jpeg",
       "count": 11
     },
     {
       "slug": "office",
       "title": "office",
-      "cover": "photos/office/download%20%281%29.jpeg",
+      "cover": "photos/office/cover.jpeg",
       "count": 21
     },
     {
       "slug": "office2",
       "title": "office2",
-      "cover": "photos/office2/download%20%281%29.jpeg",
+      "cover": "photos/office2/cover.jpeg",
       "count": 35
     }
   ]
 }
+
