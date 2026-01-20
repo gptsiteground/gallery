@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Photo Collage</title>
+  <style>
+    :root { --gap: 10px; }
+    body { margin: 0; font-family: system-ui, Arial, sans-serif; background: #0b0c10; color: #e7e7e7; }
+    header { padding: 18px 16px; position: sticky; top: 0; backdrop-filter: blur(8px); background: rgba(11,12,16,.7); border-bottom: 1px solid rgba(255,255,255,.08); }
+    header h1 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+    header p { margin: 0; opacity: .8; font-size: 13px; }
+    .wrap { padding: 16px; }
+
+    /* Masonry-style columns (simple + fast) */
+    .grid {
+      column-count: 4;
+      column-gap: var(--gap);
+    }
+    @media (max-width: 1200px) { .grid { column-count: 3; } }
+    @media (max-width: 800px)  { .grid { column-count: 2; } }
+    @media (max-width: 520px)  { .grid { column-count: 1; } }
+
+    .card {
+      break-inside: avoid;
+      margin: 0 0 var(--gap);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 8px 22px rgba(0,0,0,.25);
+      cursor: zoom-in;
+      transition: transform .12s ease;
+    }
+    .card:hover { transform: translateY(-2px); }
+    .card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed; inset: 0;
+      display: none;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,.82);
+      padding: 20px;
+      z-index: 999;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: min(1200px, 95vw);
+      max-height: 90vh;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+    }
+    .hint { margin-top: 10px; font-size: 12px; opacity: .75; text-align: center; }
+
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Photo Collage</h1>
+    <p>Loads all images listed in <code>images.json</code> from the <code>photos/</code> folder and displays them as a collage.</p>
+  </header>
+
+  <div class="wrap">
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <div>
+      <img id="lbImg" alt="Preview" />
+      <div class="hint">Click anywhere (or press Esc) to close</div>
+    </div>
+  </div>
+
+  <script>
+    const PHOTOS_DIR = "photos/";
+    const grid = document.getElementById("grid");
+    const lightbox = document.getElementById("lightbox");
+    const lbImg = document.getElementById("lbImg");
+
+    function openLightbox(src) {
+      lbImg.src = src;
+      lightbox.classList.add("open");
+      lightbox.setAttribute("aria-hidden", "false");
+    }
+    function closeLightbox() {
+      lightbox.classList.remove("open");
+      lightbox.setAttribute("aria-hidden", "true");
+      lbImg.src = "";
+    }
+    lightbox.addEventListener("click", closeLightbox);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeLightbox();
+    });
+
+    async function loadGallery() {
+      try {
+        const res = await fetch("images.json", { cache: "no-store" });
+        if (!res.ok) throw new Error("Could not load images.json");
+        const files = await res.json();
+
+        if (!Array.isArray(files) || files.length === 0) {
+          grid.innerHTML = `
+            <p style="opacity:.85; max-width: 800px; line-height: 1.5">
+              Your <code>images.json</code> is empty. Add your image filenames there (e.g. <code>\"myphoto.jpg\"</code>)
+              and place the files inside <code>photos/</code>.
+            </p>`;
+          return;
+        }
+
+        files.forEach((name) => {
+          const src = PHOTOS_DIR + name;
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const img = document.createElement("img");
+          img.loading = "lazy";
+          img.alt = name;
+          img.src = src;
+
+          card.appendChild(img);
+          card.addEventListener("click", () => openLightbox(src));
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        grid.innerHTML = `
+          <p style="opacity:.85; max-width: 900px; line-height: 1.5">
+            Error: ${err.message}.<br><br>
+            <strong>Tip:</strong> If you opened this file by double-clicking (file://), the browser may block <code>fetch()</code>.
+            Serve the folder over HTTP (any simple local web server or your web host) and try again.
+          </p>`;
+      }
+    }
+
+    loadGallery();
+  </script>
+</body>
+</html>
